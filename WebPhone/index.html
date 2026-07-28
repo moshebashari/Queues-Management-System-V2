@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>סימולטור מערכת תורים IVR</title>
+    <style>
+        /* עיצוב פנימי מלא - ללא תלות באינטרנט */
+        body { 
+            background-color: #f4f6f9; 
+            height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+        .phone-container { 
+            width: 320px; 
+            background: white; 
+            border-radius: 24px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
+            padding: 25px; 
+            border: 4px solid #333; 
+        }
+        .screen { 
+            background: #222; 
+            color: #00ff00; 
+            font-family: monospace; 
+            padding: 15px; 
+            border-radius: 12px; 
+            height: 110px; 
+            margin-bottom: 20px; 
+            box-sizing: border-box;
+            text-align: center; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+        }
+        .dialer-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 12px; 
+        }
+        .dial-btn { 
+            height: 60px; 
+            font-size: 1.5rem; 
+            font-weight: bold; 
+            border-radius: 50%; 
+            border: 1px solid #ccc; 
+            background: #f9f9f9; 
+            cursor: pointer; 
+            transition: 0.2s; 
+        }
+        .dial-btn:active { 
+            background: #e0e0e0; 
+            transform: scale(0.95); 
+        }
+        .action-btn { 
+            width: 100%; 
+            margin-top: 15px; 
+            font-weight: bold; 
+            height: 45px;
+            border-radius: 8px;
+            border: none;
+            color: white;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+        .btn-success { background-color: #48c78e; }
+        .btn-danger { background-color: #f14668; }
+    </style>
+</head>
+<body>
+
+<div class="phone-container">
+    <!-- מסך הטלפון -->
+    <div class="screen" id="phone-screen">
+        <div>הטלפון מנותק</div>
+        <div style="font-size: 0.75rem; color: #aaa; margin-top: 5px;" id="buffer-screen"></div>
+    </div>
+
+    <!-- מקלדת הטלפון -->
+    <div class="dialer-grid">
+        <button class="dial-btn" onclick="sendDigit('1')">1</button>
+        <button class="dial-btn" onclick="sendDigit('2')">2</button>
+        <button class="dial-btn" onclick="sendDigit('3')">3</button>
+        <button class="dial-btn" onclick="sendDigit('4')">4</button>
+        <button class="dial-btn" onclick="sendDigit('5')">5</button>
+        <button class="dial-btn" onclick="sendDigit('6')">6</button>
+        <button class="dial-btn" onclick="sendDigit('7')">7</button>
+        <button class="dial-btn" onclick="sendDigit('8')">8</button>
+        <button class="dial-btn" onclick="sendDigit('9')">9</button>
+        <button class="dial-btn" onclick="sendDigit('*')">*</button>
+        <button class="dial-btn" onclick="sendDigit('0')">0</button>
+        <button class="dial-btn" onclick="sendDigit('#')">#</button>
+    </div>
+
+    <!-- כפתור חיוג / ניתוק -->
+    <button class="action-btn btn-success" id="call-trigger" onclick="toggleCall()">📞 התחל שיחה</button>
+</div>
+
+<!-- טעינת ה-Socket המקומי ישירות מהשרת שלך (בלי אינטרנט חיצוני) -->
+<script src="/socket.io/socket.io.js"></script>
+<script src="/phone.js"></script>
+</body>
+</html>

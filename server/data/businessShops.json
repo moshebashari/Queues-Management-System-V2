@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "name": "קפה וסימפטיה",
+    "owner_name": "אבי כהן",
+    "whatsapp_phone": "0501234567",
+    "voice_phone": "036123456"
+  },
+  {
+    "id": 2,
+    "uuid": "123e4567-e89b-12d3-a456-426614174000",
+    "name": "המרכז לגינון",
+    "owner_name": "מיכל לוי",
+    "whatsapp_phone": "0529876543",
+    "voice_phone": "048765432"
+  },
+  {
+    "id": 3,
+    "uuid": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+    "name": "תיקוני אקספרס",
+    "owner_name": "יוסי מזרחי",
+    "whatsapp_phone": "0541112223",
+    "voice_phone": "025556667"
+  },
+  {
+    "id": 4,
+    "uuid": "a1b2c3d4-e5f6-47g8-b9i0-k1l2m3n4o5p6",
+    "name": "מאפיית הבוטיק",
+    "owner_name": "שרה ישראלי",
+    "whatsapp_phone": "0583334445",
+    "voice_phone": "097778889"
+  },
+  {
+    "id": 5,
+    "uuid": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "name": "סטודיו לעיצוב",
+    "owner_name": "דניאל רותם",
+    "whatsapp_phone": "0536667778",
+    "voice_phone": "077123456"
+  }
+]
