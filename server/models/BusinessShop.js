@@ -43,9 +43,10 @@ module.exports = (s, DataTypes) => {
 
     BusinessShop.associate = (models) => {
         BusinessShop.hasMany(models.Employee, { as: 'employee', foreignKey: 'business_id', targetKey: 'id' });
-        BusinessShop.hasMany(models.WorkingHours, { as: 'workingHours', foreignKey: 'business_id', targetKey: 'id' });
+        BusinessShop.hasMany(models.User, { as: 'user', foreignKey: 'business_id', targetKey: 'id' });
+        BusinessShop.hasMany(models.Shift, { as: 'shift', foreignKey: 'business_id', targetKey: 'id' });
         BusinessShop.hasMany(models.Appointment, { as: 'appointment', foreignKey: 'business_id', targetKey: 'id' });
-        BusinessShop.hasOne(models.BusinessSettings, {as: 'businessSettings', foreignKey: 'business_id', targetKey: 'id'})
+        BusinessShop.hasOne(models.BusinessSettings, { as: 'businessSettings', foreignKey: 'business_id', targetKey: 'id' })
     }
 
     return BusinessShop;

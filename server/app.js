@@ -5,9 +5,9 @@ const PORT = 3000;
 const { error } = require("console");
 const { sequelize } = require('./utils/database');
 const { sendMsgBack, allJewishHolidays, checkDateForRestDay, convertStrDateToDate, 
-    checkEmployeesAppointmentWindow, generateSlotsFromTime, bulidWorkingHoursArr, 
+    checkEmployeesAppointmentWindow, generateSlotsFromTime, bulidShiftsArr, 
     allAvaliableApponintments, generate8DigitsNumber, convertNumbersToHour, checkAvaliablesHours } = require("./utils/utils");
-const { getBusinessIdByPhoneNum, getEmployeesByBusinessId, getWorkingHoursByDay, getAppointments, createNewEmployee, createNewAppointment, confirmedAppointment } = require("./utils/DBFanctions");
+const { getBusinessIdByPhoneNum, getEmployeesByBusinessId, getShiftsByDay, getAppointments, createNewEmployee, createNewAppointment, confirmedAppointment } = require("./utils/DBFanctions");
 const { DATE } = require("sequelize");
 require('dotenv').config();
 
@@ -29,16 +29,16 @@ app.get('/', async (req, res) => {
         const employeesData = await getEmployeesByBusinessId(id.id, null, date);
         console.log('all employees: ', employeesData);
         const avaEmp = checkEmployeesAppointmentWindow(date, employeesData);
-        const employeesWorkingHours = bulidWorkingHoursArr(avaEmp);
+        const employeesShifts = bulidShiftsArr(avaEmp);
         const employeesId = avaEmp.map(em => em.id);
         const appointments = await getAppointments(date, id, employeesId);
-        const avaApps = allAvaliableApponintments(employeesWorkingHours, appointments);
+        const avaApps = allAvaliableApponintments(employeesShifts, appointments);
         console.log('Avaliable appointments', avaApps);
         const hour = convertNumbersToHour('720');
         console.log(hour)
         const hours = checkAvaliablesHours(avaApps, hour);
         console.log(hours);
-        // const wh = await getWorkingHoursByDay(date, id.id, employeesId);
+        // const wh = await getShiftsByDay(date, id.id, employeesId);
 
     }
     else console.log(date);
@@ -46,7 +46,7 @@ app.get('/', async (req, res) => {
     // console.log(generateSlotsFromTime('08:00:00', '16:00:00', 20));
     // const employeesData = {name: 'חיים שמש', businessId: 2, employeeNum: 2347, contactPhone: '0548123455'};
     // const employeeConfigs = {};
-    // const workingHours = [{businessId: 2, dayOfWeek: 0, startTime: '08:00:00', endTime: '16:00:00'},
+    // const shifts = [{businessId: 2, dayOfWeek: 0, startTime: '08:00:00', endTime: '16:00:00'},
     //     {businessId: 2, dayOfWeek: 1, startTime: '08:00:00', endTime: '16:00:00'},
     //     {businessId: 2, dayOfWeek: 2, startTime: '08:00:00', endTime: '13:00:00'},
     //     {businessId: 2, dayOfWeek: 3, startTime: '08:00:00', endTime: '16:00:00'},
@@ -54,7 +54,7 @@ app.get('/', async (req, res) => {
     //     {businessId: 2, dayOfWeek: 5, startTime: '08:00:00', endTime: '12:00:00'}
     // ]
 
-    // const allEmployeeData = await createNewEmployee(employeesData, workingHours, employeeConfigs);
+    // const allEmployeeData = await createNewEmployee(employeesData, shifts, employeeConfigs);
     // console.log(generate8DigitsNumber());
     // const appointmentData = {businessId: 2, employeeId: 5,
     //      appointmentDateTime: '2026-05-18 12:20:00', contactPhone: '0552346789', bookingPhone: '0552346789'}

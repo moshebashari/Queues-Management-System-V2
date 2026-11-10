@@ -1,7 +1,7 @@
 const { literal } = require('sequelize');
 const { sequelize } = require('../utils/database');
 
-const APPOINTMENT_STATUSES = ['available', 'pending', 'confirmed', 'completed', 'cancelled'];
+const APPOINTMENT_STATUSES = ['available', 'pending', 'booked', 'completed', 'cancelled', 'blocked'];
 
 module.exports = (s, DataTypes) => {
     const Appointment = sequelize.define('Appointment', {
@@ -11,7 +11,7 @@ module.exports = (s, DataTypes) => {
             defaultValue: DataTypes.UUIDV4,
         },
         bookingCode: {
-            allowNull: false,
+            allowNull: true,
             type: DataTypes.INTEGER,
         },
         businessId: {
@@ -33,6 +33,17 @@ module.exports = (s, DataTypes) => {
             },
             onUpdate: 'CASCADE',
             onDelete: 'CASCADE',
+        },
+        userId: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            references: {
+                model: 'users',
+                key: 'id'
+            },
+            onUpdate: 'CASCADE',
+            onDelete: 'CASCADE',
+            defaultValue: null
         },
         appointmentDateTime: {
             allowNull: false,
@@ -69,7 +80,7 @@ module.exports = (s, DataTypes) => {
             validate: {
                 isIn: {
                     args: [APPOINTMENT_STATUSES],
-                    msg: 'Status has to be one of the following: pending, confirmed, completed, cancelled'
+                    msg: 'Status has to be one of the following: pending, booked, completed, cancelled'
                 }
             }
         },
@@ -81,13 +92,17 @@ module.exports = (s, DataTypes) => {
         reminderOptions: {
             type: DataTypes.JSON,
             allowNull: true,
+        },
+        accessToken: {
+            allowNull: true,
+            type: DataTypes.STRING,
         }
-
 
     }, {
         indexes: [
             { fields: ['uuid'] },
             { unique: true, fields: ['business_id', 'booking_code'], name: 'unique_code_per_business' },
+            { unique: true, fields: ['uuid', 'access_token'], name: 'unique_token_per_uuid' },
             { fields: ['appointment_date_time'] },
             { fields: ['has_notifications'] },
             { fields: ['business_id'] },
@@ -97,7 +112,7 @@ module.exports = (s, DataTypes) => {
                 fields: [
                     'employee_id',
                     'appointment_date_time',
-                    literal("(case when `status` != `cancelled` then 1 else null end)")
+                    literal("(case when `status` != 'cancelled' then 1 else null end)")
                 ]
             }
         ],
@@ -116,6 +131,7 @@ module.exports = (s, DataTypes) => {
     Appointment.associate = (models) => {
         Appointment.belongsTo(models.BusinessShop, { as: 'businessShop', foreignKey: 'business_id' });
         Appointment.belongsTo(models.Employee, { as: 'employee', foreignKey: 'employee_id' });
+        Appointment.belongsTo(models.User, { as: 'user', foreignKey: 'user_id' })
     }
 
 

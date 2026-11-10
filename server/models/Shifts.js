@@ -2,7 +2,7 @@ const { sequelize } = require('../utils/database');
 
 
 module.exports = (s, DataTypes) => {
-    const WorkingHours = sequelize.define('WorkingHours', {
+    const Shifts = sequelize.define('Shift', {
         id: {
             primaryKey: true,
             type: DataTypes.INTEGER,
@@ -43,17 +43,23 @@ module.exports = (s, DataTypes) => {
     }, {
         indexes: [
             { fields: ['employee_id'] },
-            { fields: ['business_id'] }
+            { fields: ['business_id'] },
+            {
+                fields: ['employee_id', 'day_of_week'],
+                name: "inx_day_employee",
+                unique: true
+            }
         ],
         timestamps: false,
         underscored: true,
-        tableName: 'working_hours'
+        tableName: 'shifts'
     })
 
-    WorkingHours.associate = (models) => {
-        WorkingHours.belongsTo(models.BusinessShop, { as: 'businessShop', foreignKey: 'business_id' });
-        WorkingHours.belongsTo(models.Employee, { as: 'employee', foreignKey: 'employee_id' });
+    Shifts.associate = (models) => {
+        Shifts.belongsTo(models.BusinessShop, { as: 'businessShop', foreignKey: 'business_id' });
+        Shifts.belongsTo(models.Employee, { as: 'employee', foreignKey: 'employee_id' });
+        Shifts.hasMany(models.Break, {as: 'break', foreignKey: 'shift_id', targetKey: 'id' })
     }
 
-    return WorkingHours
+    return Shifts
 } 

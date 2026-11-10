@@ -1,8 +1,14 @@
+const { sequelize, BusinessShop, Employee, EmployeeConfigs, Shifts, Appointment } = require('../models');
 const axios = require('axios');
-const { template } = require('lodash');
-const { HDate, HebrewCalendar, Location, flags } = require('@hebcal/core');
+const { template, includes } = require('lodash');
+const { HDate, HebrewCalendar, Location, flags, greg, months } = require('@hebcal/core');
+const moment = require('moment-timezone');
+const { DateTime } = require('luxon');
 const path = require('path'); // מודול מובנה לניהול נתיבים
 const player = require('node-wav-player');
+const { channel } = require('diagnostics_channel');
+const crypto = require('crypto');
+const { where } = require('sequelize');
 const audioFolderPath = path.join(__dirname, '../..', 'audio_files');
 let currentIndex = 0;
 let isPlaying = false;
@@ -65,8 +71,8 @@ const playPlaylist = async (files) => {
         try {
             const filePath = path.join(audioFolderPath, file);
             await player.play({ path: filePath, sync: true })
-            .then()
-            .catch((error) => { console.error(`שגיאה בנגינת הקובץ ${filePath}:`, error); });
+                .then()
+                .catch((error) => { console.error(`שגיאה בנגינת הקובץ ${filePath}:`, error); });
         } catch (err) {
             console.error(`שגיאה בנגינת הקובץ ${file}:`, err);
         }
@@ -74,11 +80,58 @@ const playPlaylist = async (files) => {
     isPlaying = false;
 }
 
+const playPlaylistSip = async (channel, files, allowedDigits = []) => {
+    return new Promise((resolve, reject) => {
+
+        const combineMedia = files.join(',');
+
+        let activePlayback = null;
+
+        const onDtmf = (event) => {
+            if (allowedDigits.length > 0 && (allowedDigits[0] === '!' || !allowedDigits.includes(event.digit))) return;
+            cleanup()
+
+            if (activePlayback) {
+                activePlayback.stop();
+            }
+            resolve();
+
+        }
+
+        const onPlaybackFinished = () => {
+            console.log("Playback finished naturally.");
+            cleanup();
+            resolve();
+        };
+
+        function cleanup() {
+            channel.removeListener('ChannelDtmfReceived', onDtmf);
+            if (activePlayback) {
+                activePlayback.removeListener('PlaybackFinished', onPlaybackFinished);
+            }
+        }
+
+        channel.on('ChannelDtmfReceived', onDtmf);
+        // קריאה אחת בלבד ל-play
+        channel.play({ media: combineMedia }, (err, playback) => {
+            if (err) {
+                cleanup();
+                return reject(err);
+            }
+
+            // האירוע הזה יופעל *רק* אחרי שהקובץ האחרון ברשימה יסתיים
+            activePlayback = playback;
+            activePlayback.on('PlaybackFinished', onPlaybackFinished);
+        });
+    });
+
+};
+
 function stopPlaylist() {
-  if (isPlaying) {
-    player.stop(); // משתיק את הסאונד במערכת ההפעלה
-    isPlaying = false;
-  }
+    if (isPlaying) {
+        player.stop(); // משתיק את הסאונד במערכת ההפעלה
+        isPlaying = false;
+    }
 }
 
 const messageReturnMenu = (socket, session, msg, callBack, duration = 1000) => {
@@ -87,7 +140,6 @@ const messageReturnMenu = (socket, session, msg, callBack, duration = 1000) => {
         callBack(socket, session)
     }, duration);
 }
-
 
 const sendMsgBack = async (contact, msg) => {
     if (msg.type !== 'text') {
@@ -114,6 +166,18 @@ const sendMsgBack = async (contact, msg) => {
 
 function fixHebrew(text) {
     return text.split('').reverse().join('');
+}
+
+const firstAndLastGergDateInHeMonth = (year, month) => {
+    const firstDateHe = new HDate(1, month, year);
+    const firstDate = moment(firstDateHe.greg()).tz("Asia/Jerusalem").format("YYYY-MM-DD");
+
+    const lastDayNum = firstDateHe.daysInMonth();
+    const lastDateHe = new HDate(lastDayNum, month, year);
+    const lastDate = moment(lastDateHe.greg()).tz("Asia/Jerusalem").format("YYYY-MM-DD");
+    console.log(firstDate)
+    console.log(lastDate)
+    return { firstDate, lastDate }
 }
 
 const allJewishHolidays = () => {
@@ -145,6 +209,66 @@ const allJewishHolidays = () => {
     });
 }
 
+const allJewishHolidaysPerMonth = (year, month, hebrewDate = false) => {
+    const options = {
+        year: year,
+        isHebrewYear: hebrewDate,
+        location: Location.lookup('Jerusalem'), // קובע שזה לפי לוח ישראל
+        il: true, // מציין שאנחנו בישראל (חשוב מאוד לימי חופשה!)   // כולל שבתות
+    };
+
+    const events = HebrewCalendar.calendar(options);
+    const blockedDates = [];
+
+    events.forEach(ev => {
+        const gregDate = ev.getDate().greg();
+
+        // סינון ראשוני לחודש המבוקש בלבד
+        if ((!hebrewDate && (gregDate.getFullYear() !== year || gregDate.getMonth() !== (month - 1))) ||
+            (hebrewDate && ev.getDate().getMonth() !== month)) {
+            return;
+        }
+        const dayOfWeek = gregDate.getDay(); // 0 = ראשון, 5 = שישי, 6 = שבת
+        // const date = `${gregDate.getFullYear()}-${String(gregDate.getMonth() + 1).padStart(2, '0')}-${String(gregDate.getDate()).padStart(2, '0')}`;
+        const name = fixHebrew(ev.render('he'));
+        const date = moment(gregDate).tz("Asia/Jerusalem").format("YYYY-MM-DD");
+
+        const mask = ev.getFlags();
+        const isChag = mask & flags.CHAG;             // יום טוב (שבתון דתי)
+        const isCholHaMoed = mask & flags.CHOL_HAMOED; // חול המועד
+        const isModern = mask & flags.MODERN_HOLIDAY;  // חגים לאומיים (עצמאות)
+
+        // 1. אם החג יוצא בשבת (6) - נתעלם, כי שבת ממילא סגורה אצלנו
+        if (dayOfWeek === 6) return;
+
+        // 2. בדיקה: האם זהו יום חג רשמי (Yom Tov)?
+        if (isChag || isCholHaMoed || (isModern && ev.getDesc() === "Yom HaAtzma'ut")) {
+            blockedDates.push({ date, name });
+        }
+    });
+
+    return blockedDates;
+}
+
+const isJewishHolidayPerDate = (date) => {
+    const events = HebrewCalendar.getHolidaysOnDate(date, true);
+    let isHoliday = false;
+    if (!events) return isHoliday;
+
+    events.forEach(ev => {
+        const mask = ev.getFlags();
+        const isChag = mask & flags.CHAG;             // יום טוב (שבתון דתי)
+        const isCholHaMoed = mask & flags.CHOL_HAMOED; // חול המועד
+        const isModern = mask & flags.MODERN_HOLIDAY;  // חגים לאומיים (עצמאות)
+        // 2. בדיקה: האם זהו יום חג רשמי (Yom Tov)?
+        if (isChag || isCholHaMoed || (isModern && ev.getDesc() === "Yom HaAtzma'ut")) {
+            isHoliday = true;
+            return;
+        }
+    })
+
+    return isHoliday;
+}
 
 const convertStrDateToDate = (origStrDate, dateInput = false) => {
     let strDate = origStrDate;
@@ -212,22 +336,66 @@ const checkEmployeesAppointmentWindow = (date, employees) => {
     return avaliableEmployees;
 }
 
-const checkdistantAppointmentWindow = (date, employees) => {
+const checkdistantAppointmentWindow = (date, employees, employeeId) => {
     const currentDate = new Date();
     let distantDate = null;
 
     for (let employee of employees) {
-        const appWin = employee.booking_window;
+        if (employeeId === 0 || employeeId === employee.id) {
+            const appWin = employee.booking_window;
 
-        const year = appWin.unit === 'year' ? currentDate.getFullYear() + appWin.amount : currentDate.getFullYear();
-        const month = appWin.unit === 'month' ? currentDate.getMonth() + appWin.amount : currentDate.getMonth();
-        const day = appWin.unit === 'day' ? currentDate.getDate() + appWin.amount : currentDate.getDate();
+            const year = appWin.unit === 'year' ? currentDate.getFullYear() + appWin.amount : currentDate.getFullYear();
+            const month = appWin.unit === 'month' ? currentDate.getMonth() + appWin.amount : currentDate.getMonth();
+            // const day = appWin.unit === 'day' || appWin.unit === 'week' ? appWin.unit === 'day' ? currentDate.getDate() + appWin.amount : currentDate.getDate() + appWin.amount * 7 : currentDate.getDate();
 
-        const appWinDate = new Date(year, month, day);
-        if (date > appWinDate && (distantDate === null || distantDate < appWinDate)) distantDate = appWinDate;
+            let day = null;
+            if (appWin.unit === 'day') {
+                day = currentDate.getDate() + appWin.amount;
+            }
+            else if (appWin.unit === 'week') {
+                if (appWin.amount > 0) {
+                    day = currentDate.getDate() + appWin.amount * 7;
+                }
+                else {
+                    day = currentDate.getDate() + 5 - currentDate.getDay();
+                }
+            }
+            else {
+                day = currentDate.getDate();
+            }
+
+            const appWinDate = new Date(year, month, day);
+            if (date > appWinDate && (distantDate === null || distantDate < appWinDate)) distantDate = appWinDate;
+
+            if (employeeId === employee.id) break;
+        }
     }
 
     return distantDate;
+}
+
+const checkDistantAppWinPerDate = (currentDate, appWin) => {
+    const year = appWin.unit === 'year' ? currentDate.getFullYear() + appWin.amount : currentDate.getFullYear();
+    const month = appWin.unit === 'month' ? currentDate.getMonth() + appWin.amount : currentDate.getMonth();
+    // const day = appWin.unit === 'day' || appWin.unit === 'week' ? appWin.unit === 'day' ? currentDate.getDate() + appWin.amount : currentDate.getDate() + appWin.amount * 7 : currentDate.getDate();
+
+    let day = null;
+    if (appWin.unit === 'day') {
+        day = currentDate.getDate() + appWin.amount;
+    }
+    else if (appWin.unit === 'week') {
+        if (appWin.amount > 0) {
+            day = currentDate.getDate() + appWin.amount * 7;
+        }
+        else {
+            day = currentDate.getDate() + 5 - currentDate.getDay();
+        }
+    }
+    else {
+        day = currentDate.getDate();
+    }
+
+    return new Date(year, month, day);
 }
 
 const checkDateForRestDay = (date) => {
@@ -336,22 +504,22 @@ const allAvaliableApponintments2 = (appointments) => {
     return avaApps;
 }
 
-const bulidWorkingHoursArr = (employees) => {
-    const workingHoursArr = [];
+const bulidShiftsArr = (employees) => {
+    const shiftsArr = [];
 
     for (let employee of employees) {
-        workingHoursArr.push(...generateSlotsFromTime(employee));
+        shiftsArr.push(...generateSlotsFromTime(employee));
     }
 
-    return workingHoursArr.sort();
+    return shiftsArr.sort();
 }
 
-const generateSlotsFromTime = (employee) => {
+const generateSlotsFromTime = (shifts, appDur) => {
     const slots = [];
 
-    const workingHours = employee.workingHours;
-    const appDur = employee.appointment_duration;
-    for (let wh of workingHours) {
+    // const shifts = employee.shifts;
+    // const appDur = employee.appointment_duration;
+    for (let wh of shifts) {
         const [h, m] = wh.startTime.split(':').map(Number);
         const [endH, endM] = wh.endTime.split(':').map(Number);
 
@@ -362,7 +530,7 @@ const generateSlotsFromTime = (employee) => {
             const hour = Math.floor(current / 60).toString().padStart(2, '0');
             const min = (current % 60).toString().padStart(2, '0');
 
-            slots.push(`${hour}:${min}:00-${employee.id}`);
+            slots.push(`${hour}:${min}:00`);
             current += appDur;
         }
     }
@@ -370,10 +538,40 @@ const generateSlotsFromTime = (employee) => {
     return slots;
 }
 
+const getDifferenceSorted = (arr1, arr2) => {
+    const result = [];
+    let i = 0;
+    let j = 0;
+
+    while (i < arrA.length && j < arrB.length) {
+        if (arrA[i] === arrB[j]) {
+            i++;
+            j++;
+        } else if (arrA[i] < arrB[j]) {
+            result.push(arrA[i]);
+            i++;
+        } else {
+            j++;
+        }
+    }
+
+    while (i < arrA.length) {
+        result.push(arrA[i]);
+        i++;
+    }
+
+    return result;
+}
+
+
 const generate8DigitsNumber = () => {
     return Math.floor(10000000 + Math.random() * 90000000)
 }
 
+function generateSecureToken() {
+    return crypto.randomBytes(32).toString('hex');
+    // מייצר מחרוזת אקראית באורך 64 תווים (למשל: 4f8a92b3c7...)
+}
 
 const checkAvaliablesHours = (avaApps, hour, hoursObj = null, includeMinute = false) => {
     let avaHours = []
@@ -439,8 +637,26 @@ const checkAvaliablesHours = (avaApps, hour, hoursObj = null, includeMinute = fa
     return { specificHour, hasReqHours, avaHours };
 }
 
+function convertToIsraelDate(dateInput) {
+    // הגדרת המרר לשעון ישראל
+    const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Jerusalem',
+        year: 'numeric', month: 'numeric', day: 'numeric',
+        // hour: 'numeric', minute: 'numeric', second: 'numeric',
+        // hour12: false
+    });
 
+    const parts = formatter.formatToParts(dateInput);
+    const year = parts.find(p => p.type === 'year').value;
+    const month = parts.find(p => p.type === 'month').value;
+    const day = parts.find(p => p.type === 'day').value;
+    //   const hour = parts.find(p => p.type === 'hour').value;
+    //   const minute = parts.find(p => p.type === 'minute').value;
+    //   const second = parts.find(p => p.type === 'second').value;
 
+    // 3. יצירת אובייקט Date חדש שמיושר פיזית ל-UTC לפי הערכים של ישראל
+    return new Date(Date.UTC(year, month - 1, day));
+}
 
 const convertNumbersToHour = (input, isHour, isCode = false) => {
 
@@ -482,7 +698,7 @@ const selectDateTimeByCode = (code) => {
     }
     if (codeParts.length === 4) codeParts.push('');
     console.log(codeParts);
-    const codeObj = { employeeId: Number(codeParts[0]) };
+    const codeObj = { employeeCode: codeParts[0] };
 
     // const keys = ['ivrId', 'day', 'month', 'hour', 'minutes']
 
@@ -509,18 +725,246 @@ const selectDateTimeByCode = (code) => {
     return { status: true, codeObj: codeObj };
 }
 
+const convertDataToAudioFiles = (data, type) => {
+
+    const files = [];
+
+    if (type === 'date') {
+        files.push(`sound:basic/weekday_${data.getDay()}`, `sound:basic/day_${data.getDate()}`,
+            `sound:basic/month_${data.getMonth() + 1}`, `sound:basic/year_${data.getFullYear() % 100}`);
+    }
+    else if (type === 'hour') {
+        let [h, m] = data.slice(0, 5).split(':');
+        if (h > '12') h = `${+h - 12}`.padStart(2, '0');
+        files.push(`sound:basic/${h}`);
+        if (m !== '00') files.push(`sound:basic/minute_${m}`);
+    }
+    else if (type === 'phone') {
+        files.push(data.split('').map(num => `sound:basic/0${num}`));
+    }
+    else if (type === 'bookingCode') {
+        files.push([...String(data)].map(num => `sound:basic/0${num}`))
+    }
+
+    return files;
+}
+
+function mergeContinuousSlots(slots) {
+    if (!slots || slots.length === 0) return [];
+
+    const sortedSlots = slots
+        .map(s => ({
+            startTime: new Date(s.startTime),
+            endTime: new Date(s.endTime)
+        }))
+        .sort((a, b) => a.startTime - b.startTime);
+
+    const merged = [];
+    let currentBlock = sortedSlots[0];
+
+    for (let i = 1; i < sortedSlots.length; i++) {
+        const nextSlot = sortedSlots[i];
+
+        if (nextSlot.startTime <= currentBlock.endTime) {
+            if (nextSlot.endTime > currentBlock.endTime) {
+                currentBlock.endTime = nextSlot.endTime;
+            }
+        } else {
+            merged.push(currentBlock);
+            currentBlock = nextSlot;
+        }
+    }
+    merged.push(currentBlock);
+
+    return merged;
+}
+
+function generateUtcTimesForDayOfWeek(startDate, endDate, dayOfWeek, ranges, changeDefinitions = null) {
+    const zone = 'Asia/Jerusalem';
+
+    const luxonDayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek;
+
+    let current = DateTime.fromISO('2026-05-17').setZone(zone).startOf('day');
+    // let current = DateTime.fromISO(startDate).setZone(zone).startOf('day');
+    // let current = DateTime.now().setZone(zone).startOf('day');
+
+    const end = DateTime.fromISO(endDate).setZone(zone).endOf('day');
+    // const end = DateTime.fromJSDate(endDate).setZone(zone).endOf('day');
+
+    const utcRanges = [];
+
+    while (current <= end) {
+        if (current.weekday === luxonDayOfWeek) {
+            ranges.forEach(range => {
+                const type = range.type;
+                if (!changeDefinitions || current >= changeDefinitions[type].effectiveDate) {
+                    const keys = ['startTime', 'endTime'];
+                    const utcRange = {}
+                    for (let key of keys) {
+                        const [hours, minutes, seconds] = range[key].split(':').map(Number);
+
+                        const localDateTime = current.set({
+                            hour: hours,
+                            minute: minutes,
+                            second: 0,
+                            millisecond: 0
+                        })
+
+                        // const utcDateTime = localDateTime.toUTC().toSQL({includeOffset: false, includeZone: false});
+                        const utcDateTime = localDateTime.toUTC().toJSDate();
+                        utcRange[key] = utcDateTime;
+                    }
+
+                    utcRange.type = range.type;
+                    utcRanges.push(utcRange);
+                }
+            })
+        }
+        current = current.plus({ days: 1 }); // מעבר ליום הבא בצורה בטוחה
+    }
+
+    return utcRanges;
+}
+
+const generateSlotsPerDay = (date, startTime, endTime, breaks, intervalMinutes, employeeId, businessId) => {
+    const slots = [];
+
+    // const localStartTime = DateTime.fromISO(`${date}T${startTime}`, {
+    //     zone: 'Asia/Jerusalem'
+    // });
+    // let current = localStartTime.toUTC().toJSDate();
+
+    let current = convertDateAndHourToUtcDate(date, startTime)
+    // const localEndTime = DateTime.fromISO(`${date}T${endTime}`, {
+    //     zone: 'Asia/Jerusalem'
+    // });
+    // const end = localEndTime.toUTC().toJSDate();
+    let end = convertDateAndHourToUtcDate(date, endTime)
+
+    let i = 0;
+    let breakStartTime = null;
+    if (breaks.length > 0) {
+        breakStartTime = convertDateAndHourToUtcDate(date, breaks[0].startTime);
+    }
+
+    while (current <= end) {
+        if (breakStartTime && +current === +breakStartTime) {
+            current = convertDateAndHourToUtcDate(date, breaks[i].endTime);
+            i++;
+            if (i < breaks.length) {
+                breakStartTime = convertDateAndHourToUtcDate(date, breaks[i].startTime);
+            }
+            else {
+                breakStartTime = null;
+            }
+            continue;
+        }
+        const currentDate = new Date(current)
+        const app = {
+            businessId,
+            employeeId,
+            appointmentDateTime: currentDate,
+            status: 'available'
+        }
+        // console.log(app)
+        slots.push(currentDate)
+        current.setMinutes(current.getMinutes() + intervalMinutes);
+    }
+
+    return slots
+}
+
+const convertDateAndHourToUtcDate = (date, hour) => {
+    const localTime = DateTime.fromISO(`${date}T${hour}`, {
+        zone: 'Asia/Jerusalem'
+    });
+    return localTime.toUTC().toJSDate();
+}
+
+const getdifferenceSlots = (newSlots, oldSlots) => {
+    let i = 0;
+    let j = 0;
+
+    const newSlotsDiff = [];
+    const oldSlotsDiff = [];
+    while (i < newSlots.length && j < oldSlots.length) {
+        if (+newSlots[i] === +oldSlots[j].appointment_date_time) {
+            j++;
+            i++;
+        }
+        else if (+newSlots[i] < +oldSlots[j].appointment_date_time) {
+            newSlotsDiff.push(newSlots[i]);
+            i++
+        }
+        else if (+oldSlots[j].appointment_date_time < +newSlots[i]) {
+            oldSlotsDiff.push(oldSlots[j]);
+            j++
+        }
+    }
+
+    while (i < newSlots.length) {
+        newSlotsDiff.push(newSlots[i]);
+        i++;
+    }
+    while (j < oldSlots.length) {
+        oldSlotsDiff.push(oldSlots[j]);
+        j++;
+    }
+
+    return { newSlotsDiff, oldSlotsDiff };
+}
+
+function validateAndSortDates(array) {
+  // 1. מיון מהיר של המערך לפי תאריך ההתחלה
+  const sorted = [...array].sort((a, b) => new Date(a.start) - new Date(b.start));
+
+  // 2. לולאה אחת שבודקת הכל
+  for (let i = 0; i < sorted.length; i++) {
+    const current = sorted[i];
+    const currentStart = new Date(current.start).getTime();
+    const currentEnd = new Date(current.end).getTime();
+
+    // בדיקה א': ולידציה פנימית של האובייקט (התחלה מול סוף)
+    if (currentStart >= currentEnd) {
+      throw new Error(`שגיאה באובייקט ${current.id}: תאריך ההתחלה לא יכול להיות זהה או גדול מתאריך הסוף.`);
+    }
+
+    // בדיקה ב': ולידציה מול האיבר הבא במערך (חפיפות וכפילויות)
+    if (i < sorted.length - 1) {
+      const next = sorted[i + 1];
+      const nextStart = new Date(next.start).getTime();
+
+      if (currentEnd > nextStart) {
+        throw new Error(`נמצאה חפיפה: הסוף של אובייקט ${current.id} גדול מההתחלה של אובייקט ${next.id}.`);
+      }
+      
+      if (currentStart === nextStart) {
+        throw new Error(`נמצאו תאריכי התחלה זהים בין אובייקט ${current.id} לאובייקט ${next.id}.`);
+      }
+    }
+  }
+
+  return sorted;
+}
+
 module.exports = {
     sendMsgBack,
+    firstAndLastGergDateInHeMonth,
     allJewishHolidays,
+    allJewishHolidaysPerMonth,
+    isJewishHolidayPerDate,
     convertStrDateToDate,
     checkEmployeesAppointmentWindow,
     checkdistantAppointmentWindow,
+    checkDistantAppWinPerDate,
     checkDateForRestDay,
     allAvaliableApponintments,
     allAvaliableApponintments2,
-    bulidWorkingHoursArr,
+    bulidShiftsArr,
     generateSlotsFromTime,
+    getDifferenceSorted,
     generate8DigitsNumber,
+    generateSecureToken,
     checkAvaliablesHours,
     convertNumbersToHour,
     messageReturnMenu,
@@ -528,5 +972,14 @@ module.exports = {
     formatToMySQLDateTime,
     selectDateTimeByCode,
     playPlaylist,
-    stopPlaylist
+    playPlaylistSip,
+    stopPlaylist,
+    convertDataToAudioFiles,
+    convertToIsraelDate,
+    mergeContinuousSlots,
+    generateUtcTimesForDayOfWeek,
+    generateSlotsPerDay,
+    getdifferenceSlots,
+    convertDateAndHourToUtcDate,
+    validateAndSortDates
 }

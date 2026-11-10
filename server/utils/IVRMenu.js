@@ -1,5 +1,5 @@
 const { getEmployeesByBusinessId, getAppointments } = require("./DBFanctions");
-const { convertStrDateToDate, checkEmployeesAppointmentWindow, bulidWorkingHoursArr, allAvaliableApponintments } = require("./utils");
+const { convertStrDateToDate, checkEmployeesAppointmentWindow, bulidShiftsArr, allAvaliableApponintments } = require("./utils");
 
 
 const processInputGeneral = (socket, session, input) => {
@@ -149,12 +149,12 @@ const processInputDate = (socket, session, input) => {
             const employeesData = await getEmployeesByBusinessId(session.businessIdEmpNames.id, session.employeeName, session.date);
             // console.log(employeesData);
             const avaEmp = checkEmployeesAppointmentWindow(session.date, employeesData);
-            const employeesWorkingHours = bulidWorkingHoursArr(avaEmp);
-            console.log(employeesWorkingHours)
+            const employeesShifts = bulidShiftsArr(avaEmp);
+            console.log(employeesShifts)
             const employeesId = avaEmp.map(em => em.id);
             const appointments = await getAppointments(session.date, session.businessIdEmpNames.id, employeesId);
             console.log('appointments:', appointments)
-            const avaApps = allAvaliableApponintments(employeesWorkingHours, appointments);
+            const avaApps = allAvaliableApponintments(employeesShifts, appointments);
             console.log('Avaliable appointments', avaApps);
             console.log('appointments length', avaApps.length);
 

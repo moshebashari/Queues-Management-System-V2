@@ -1,0 +1,71 @@
+# POST   http://localhost:3000/550e8400-e29b-41d4-a716-446655440000/api/auth/login
+@baseUrl = http://localhost:3000/
+
+# @name loginRequest
+POST {{baseUrl}}550e8400-e29b-41d4-a716-446655440000/api/auth/login
+Content-Type: application/json
+
+{
+    "identification": "ido_tsadok",
+    "password": "1234"
+}
+
+###
+@authToken = {{loginRequest.response.body.token}}
+
+PATCH http://localhost:3000/api/employee/change-shift-hours?employeeId=2
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+
+{
+  "dayOfWeek": 4, 
+  "startTime": "09:00:00", 
+  "endTime": "16:00:00", 
+  "effectiveDate":  "2026-05-17T03:00:00Z",
+  "breaks" : [{"startTime": "14:00:00", "endTime": "15:00:00"}]
+}
+
+# PATCH http://localhost:3000/api/appointments/block?employeeId=1
+# Content-Type: application/json
+# Authorization: Bearer {{authToken}}
+
+# {
+#     "reason": "סיבות אישיות",
+#     "data": [
+#   { "startTime": "2026-10-01T10:00:00Z", "endTime": "2026-10-01T10:30:00Z"},
+#   { "startTime": "2026-10-01T10:30:00Z", "endTime": "2026-10-01T11:00:00Z" },
+#   { "startTime": "2026-10-01T11:00:00Z", "endTime": "2026-10-01T11:30:00Z" },   
+#   { "startTime": "2026-10-01T14:00:00Z", "endTime": "2026-10-01T14:30:00Z" }
+# ]
+# }
+
+# {
+#   "newUuid": "903f26e6-167c-4d72-af16-b9ebbc9eff42"
+# }
+
+
+
+# {
+#   "businesId": 1,
+#   "employeeId": 0,
+#   "year" : 2026,
+#   "month": 5
+# }
+
+
+#        sign-up
+# {
+#     "fullName": "משה בשארי",
+#     "userName": "moba345",
+#     "phoneNumber": "0552802426",
+#     "password": "1234",
+#     "role": "client"
+# }
+
+#       login
+
+# {
+#     "identification": "0552802426",
+#     "password": "1234"
+# }

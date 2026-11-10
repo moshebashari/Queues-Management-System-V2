@@ -8,7 +8,7 @@
         "contact_phone": "0509571636",
         "name": "רוני אברהם",
         "booking_phone": "0509571636",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": false
     },
     {
@@ -20,7 +20,7 @@
         "contact_phone": "0507371789",
         "name": "דנה לוי",
         "booking_phone": "0507371789",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": true
     },
     {
@@ -32,7 +32,7 @@
         "contact_phone": "0507292448",
         "name": "אביב גבאי",
         "booking_phone": "0507292448",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": false
     },
     {
@@ -44,7 +44,7 @@
         "contact_phone": "0503386150",
         "name": "מיכל פרץ",
         "booking_phone": "0503386150",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": true
     },
     {
@@ -56,7 +56,7 @@
         "contact_phone": "0506777014",
         "name": "ישראל ישראלי",
         "booking_phone": "0506777014",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": true
     },
     {
@@ -68,7 +68,7 @@
         "contact_phone": "0501058892",
         "name": "מיכל פרץ",
         "booking_phone": "0501058892",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": true
     },
     {
@@ -80,7 +80,7 @@
         "contact_phone": "0501805720",
         "name": "אביב גבאי",
         "booking_phone": "0501805720",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": true
     },
     {
@@ -92,7 +92,7 @@
         "contact_phone": "0505253611",
         "name": "יובל דיין",
         "booking_phone": "0505253611",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": false
     },
     {
@@ -104,7 +104,7 @@
         "contact_phone": "0503421831",
         "name": "דנה לוי",
         "booking_phone": "0503421831",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": false
     },
     {
@@ -116,7 +116,7 @@
         "contact_phone": "0506085416",
         "name": "רוני אברהם",
         "booking_phone": "0506085416",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": false
     },
     {
@@ -128,7 +128,7 @@
         "contact_phone": "0509195386",
         "name": "נועה חסון",
         "booking_phone": "0509195386",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": false
     },
     {
@@ -140,7 +140,7 @@
         "contact_phone": "0509060613",
         "name": "שירה מזרחי",
         "booking_phone": "0509060613",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": false
     },
     {
@@ -152,7 +152,7 @@
         "contact_phone": "0506919128",
         "name": "נועה חסון",
         "booking_phone": "0506919128",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": false
     },
     {
@@ -164,7 +164,7 @@
         "contact_phone": "0507152416",
         "name": "נועה חסון",
         "booking_phone": "0507152416",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": false
     },
     {
@@ -176,7 +176,7 @@
         "contact_phone": "0504962346",
         "name": "שירה מזרחי",
         "booking_phone": "0504962346",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": false
     },
     {
@@ -188,7 +188,7 @@
         "contact_phone": "0507866556",
         "name": "מיכל פרץ",
         "booking_phone": "0507866556",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": true
     },
     {
@@ -200,7 +200,7 @@
         "contact_phone": "0507659761",
         "name": "יובל דיין",
         "booking_phone": "0507659761",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": false
     },
     {
@@ -212,7 +212,7 @@
         "contact_phone": "0503935490",
         "name": "משה כהן",
         "booking_phone": "0503935490",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": true
     },
     {
@@ -224,7 +224,7 @@
         "contact_phone": "0503553726",
         "name": "יובל דיין",
         "booking_phone": "0503553726",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": true
     },
     {
@@ -236,7 +236,7 @@
         "contact_phone": "0508960098",
         "name": "רוני אברהם",
         "booking_phone": "0508960098",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": true
     },
     {
@@ -248,7 +248,7 @@
         "contact_phone": "0503437257",
         "name": "דנה לוי",
         "booking_phone": "0503437257",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": true
     },
     {
@@ -260,7 +260,7 @@
         "contact_phone": "0502188290",
         "name": "רוני אברהם",
         "booking_phone": "0502188290",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": true
     },
     {
@@ -272,7 +272,7 @@
         "contact_phone": "0504552165",
         "name": "נועה חסון",
         "booking_phone": "0504552165",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": false
     },
     {
@@ -284,7 +284,7 @@
         "contact_phone": "0509130512",
         "name": "משה כהן",
         "booking_phone": "0509130512",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": true
     },
     {
@@ -296,7 +296,7 @@
         "contact_phone": "0505950064",
         "name": "יובל דיין",
         "booking_phone": "0505950064",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": true
     },
     {
@@ -308,7 +308,7 @@
         "contact_phone": "0508782504",
         "name": "ישראל ישראלי",
         "booking_phone": "0508782504",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": false
     },
     {
@@ -320,7 +320,7 @@
         "contact_phone": "0506836506",
         "name": "מיכל פרץ",
         "booking_phone": "0506836506",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": false
     },
     {
@@ -332,7 +332,7 @@
         "contact_phone": "0502096685",
         "name": "ישראל ישראלי",
         "booking_phone": "0502096685",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": false
     },
     {
@@ -344,7 +344,7 @@
         "contact_phone": "0507376560",
         "name": "אביב גבאי",
         "booking_phone": "0507376560",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": false
     },
     {
@@ -356,7 +356,7 @@
         "contact_phone": "0505402262",
         "name": "שירה מזרחי",
         "booking_phone": "0505402262",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": true
     },
     {
@@ -368,7 +368,7 @@
         "contact_phone": "0504000212",
         "name": "ישראל ישראלי",
         "booking_phone": "0504000212",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": true
     },
     {
@@ -380,7 +380,7 @@
         "contact_phone": "0505600537",
         "name": "משה כהן",
         "booking_phone": "0505600537",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": true
     },
     {
@@ -392,7 +392,7 @@
         "contact_phone": "0504234217",
         "name": "נועה חסון",
         "booking_phone": "0504234217",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": false
     },
     {
@@ -404,7 +404,7 @@
         "contact_phone": "0505838938",
         "name": "רוני אברהם",
         "booking_phone": "0505838938",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": false
     },
     {
@@ -416,7 +416,7 @@
         "contact_phone": "0502376423",
         "name": "איתי לוי",
         "booking_phone": "0502376423",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": false
     },
     {
@@ -428,7 +428,7 @@
         "contact_phone": "0508387540",
         "name": "אביב גבאי",
         "booking_phone": "0508387540",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": false
     },
     {
@@ -440,7 +440,7 @@
         "contact_phone": "0504487030",
         "name": "רוני אברהם",
         "booking_phone": "0504487030",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": false
     },
     {
@@ -452,7 +452,7 @@
         "contact_phone": "0506251769",
         "name": "אביב גבאי",
         "booking_phone": "0506251769",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": true
     },
     {
@@ -464,7 +464,7 @@
         "contact_phone": "0504788734",
         "name": "שירה מזרחי",
         "booking_phone": "0504788734",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": false
     },
     {
@@ -476,7 +476,7 @@
         "contact_phone": "0502440085",
         "name": "משה כהן",
         "booking_phone": "0502440085",
-        "status": "confirmed",
+        "status": "booked",
         "has_notifications": false
     }
 ]

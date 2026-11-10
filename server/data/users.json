@@ -1,0 +1,191 @@
+[
+  {
+    "id": -1,
+    "full_name": "עובד מערכת",
+    "user_name": "system_employee",
+    "password": "1234",
+    "role": "admin",
+    "business_id": -1,
+    "phone_number": "000000000"
+  },
+  {
+    "id": 1,
+    "full_name": "שי צדוק",
+    "user_name": "shay_tsadok",
+    "password": "1234",
+    "role": "admin",
+    "business_id": 1,
+    "phone_number": "0501112233"
+  },
+  {
+    "id": 2,
+    "full_name": "עידו צדוק",
+    "user_name": "ido_tsadok",
+    "password": "1234",
+    "role": "employee",
+    "business_id": 1,
+    "phone_number": "0502223344"
+  },
+  {
+    "id": 3,
+    "full_name": "עידו",
+    "user_name": "ido",
+    "password": "1234",
+    "role": "employee",
+    "business_id": 1,
+    "phone_number": "0503334455"
+  },
+  {
+    "id": 4,
+    "full_name": "שמואל בטיטו",
+    "user_name": "shmuel_batito",
+    "password": "1234",
+    "role": "employee",
+    "business_id": 1,
+    "phone_number": "0504445566"
+  },
+  {
+    "id": 5,
+    "full_name": "עמית שקד",
+    "user_name": "amit_shaked",
+    "password": "1234",
+    "role": "employee",
+    "business_id": 2,
+    "phone_number": "0521112233"
+  },
+  {
+    "id": 6,
+    "full_name": "יובל אריאלי",
+    "user_name": "yuval_arieli",
+    "password": "1234",
+    "role": "employee",
+    "business_id": 2,
+    "phone_number": "0522223344"
+  },
+  {
+    "id": 7,
+    "full_name": "אורית פלד",
+    "user_name": "orit_peled",
+    "password": "1234",
+    "role": "employee",
+    "business_id": 2,
+    "phone_number": "0523334455"
+  },
+  {
+    "id": 8,
+    "full_name": "ניר חסון",
+    "user_name": "nir_hasson",
+    "password": "1234",
+    "role": "employee",
+    "business_id": 2,
+    "phone_number": "0524445566"
+  },
+  {
+    "id": 9,
+    "full_name": "טלי מור",
+    "user_name": "tali_mor",
+    "password": "1234",
+    "role": "employee",
+    "business_id": 3,
+    "phone_number": "0541112233"
+  },
+  {
+    "id": 10,
+    "full_name": "איתי גבאי",
+    "user_name": "itay_gabay",
+    "password": "1234",
+    "role": "employee",
+    "business_id": 3,
+    "phone_number": "0542223344"
+  },
+  {
+    "id": 11,
+    "full_name": "נועה כץ",
+    "user_name": "noa_katz",
+    "password": "1234",
+    "role": "employee",
+    "business_id": 3,
+    "phone_number": "0543334455"
+  },
+  {
+    "id": 12,
+    "full_name": "גיא שמש",
+    "user_name": "guy_shemesh",
+    "password": "1234",
+    "role": "employee",
+    "business_id": 3,
+    "phone_number": "0544445566"
+  },
+  {
+    "id": 13,
+    "full_name": "שירה חדד",
+    "user_name": "shira_hadad",
+    "password": "1234",
+    "role": "employee",
+    "business_id": 4,
+    "phone_number": "0581112233"
+  },
+  {
+    "id": 14,
+    "full_name": "בועז אופיר",
+    "user_name": "boaz_ofir",
+    "password": "1234",
+    "role": "employee",
+    "business_id": 4,
+    "phone_number": "0582223344"
+  },
+  {
+    "id": 15,
+    "full_name": "קרן וייס",
+    "user_name": "keren_weiss",
+    "password": "1234",
+    "role": "employee",
+    "business_id": 4,
+    "phone_number": "0583334455"
+  },
+  {
+    "id": 16,
+    "full_name": "אלון צור",
+    "user_name": "alon_tzur",
+    "password": "1234",
+    "role": "employee",
+    "business_id": 4,
+    "phone_number": "0584445566"
+  },
+  {
+    "id": 17,
+    "full_name": "לימור חן",
+    "user_name": "limor_chen",
+    "password": "1234",
+    "role": "employee",
+    "business_id": 5,
+    "phone_number": "0531112233"
+  },
+  {
+    "id": 18,
+    "full_name": "אייל ברק",
+    "user_name": "eyal_barak",
+    "password": "1234",
+    "role": "employee",
+    "business_id": 5,
+    "phone_number": "0532223344"
+  },
+  {
+    "id": 19,
+    "full_name": "הילה דגן",
+    "user_name": "hila_dagan",
+    "password": "1234",
+    "role": "employee",
+    "business_id": 5,
+    "phone_number": "0533334455"
+  },
+  {
+    "id": 20,
+    "full_name": "תומר שגב",
+    "user_name": "tomer_segev",
+    "password": "1234",
+    "role": "employee",
+    "business_id": 5,
+    "phone_number": "0534445566"
+  }
+]

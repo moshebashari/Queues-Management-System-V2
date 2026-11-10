@@ -1,4 +1,3 @@
-const crypto = require('crypto');
 const fs = require('fs');
 
 /**
@@ -22,8 +21,6 @@ function generateAppointmentSlots({ date, startTime, endTime, intervalMinutes, e
     const bookingCode = Math.floor(10000000 + Math.random() * 90000000);
 
     slots.push({
-      uuid: crypto.randomUUID(),
-      booking_code: bookingCode,
       business_id: businessId,
       employee_id: employeeId,
       appointment_date_time: `${date}T${hours}:${minutes}:${seconds}`,
